@@ -1,0 +1,93 @@
+# ============================================================
+# data/queries.txt — RAG 评测问题集（6 条）
+#
+# 用途：同时评测「检索」与「生成」两段能力
+#   recall_hit     期望论文是否出现在 Top-k 中
+#   answer_correct 回答是否包含 points 列出的关键线索
+#   abstain_ok     无答案问题是否被正确拒答
+#
+# 格式约定（同 data.txt 风格）：
+#   [Qxx] 开头；`键: 值` 形式；question 之后的内容为该字段正文
+#   expect_doc 取 data/manifest.csv 中的 paper_id
+#   type: fact / numeric / hard / multi_doc / self_ref / unanswerable
+# ============================================================
+
+[Q01]
+type: fact
+lang: en-doc
+expect_doc: P01
+expect_topk: 3
+question:
+RAG 论文中提到的"参数记忆"和"非参数记忆"分别指什么？
+points:
+参数记忆 = 预训练的 seq2seq 模型（模型参数内隐知识）
+非参数记忆 = 维基百科的稠密向量索引，由预训练神经检索器访问
+
+[Q02]
+type: numeric
+lang: en-doc
+expect_doc: P02
+expect_topk: 3
+question:
+哪篇工作报告了稠密检索相比 BM25 的提升？在 top-20 段落召回准确率上绝对提升多少？
+points:
+应指出是稠密检索（dense retrieval / dual-encoder）对比 Lucene-BM25
+提升幅度为 9%-19%（绝对值）
+
+[Q03]
+type: hard
+lang: zh-doc
+expect_doc: P06
+expect_topk: 3
+question:
+固定文本长度分块会给检索增强问答系统带来什么问题？有哪些改进方案？
+points:
+会丢失段落层级之间的结构关系与隐含知识关联，导致输出质量下降
+改进方案：利用篇章段落间的树结构关系构建 RAG（树结构 RAG）
+干扰项：P03 讨论的是"长上下文中信息位置"影响，不是分块策略；P04 只做综述不提出具体方案
+
+[Q04]
+type: multi_doc
+lang: zh-doc
+expect_doc: P08
+expect_topk: 3
+question:
+语料中有哪些工作把检索增强与思维链（CoT）结合起来？取得了什么效果？
+points:
+主要命中 P08（检索增强 + 链式思维，用于汉语框架语义解析）
+框架识别准确率提升 13.52%，论元识别 F1 提升 2.24%，角色识别 F1 提升 5.09%
+数据集为 CFN2.1
+
+[Q05]
+type: self_ref
+lang: zh-doc
+expect_doc: P10
+expect_topk: 3
+question:
+语料里哪篇论文使用了 Qwen-2.5-1.5B 作为基础模型？用于什么任务？
+points:
+P10（多领域翻译中语义消歧的话题方向盘方法）
+任务：英语-汉语、德语-汉语的多领域机器翻译
+
+[Q06]
+type: unanswerable
+lang: -
+expect_doc: null
+expect_topk: -
+question:
+这些论文在 AMD ROCm 平台上实测的解码速度是多少 tokens/s？
+points:
+语料中不包含任何 ROCm 实测数据
+正确行为 = 明确拒答（"根据提供的资料无法回答"），不得编造数字
+
+# ── 附加意图（非必测）：文档位置效应 ──────────────────────
+[Q07]
+type: fact-extra
+lang: en-doc
+expect_doc: P03
+expect_topk: 3
+question:
+把相关信息放在长上下文的中间位置，模型表现会怎样？
+points:
+性能在相关信息位于开头或结尾时最高，位于中间时显著下降
+该现象即使在长上下文模型上依然存在

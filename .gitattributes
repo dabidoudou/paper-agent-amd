@@ -1,0 +1,12 @@
+# 统一换行符：仓库内一律 LF，避免 Linux 云端出现 \r 报错
+* text=auto eol=lf
+
+# 二进制文件：禁止换行转换与文本 diff
+*.pdf  binary
+*.png  binary
+*.jpg  binary
+*.safetensors binary
+*.bin  binary
+
+# 语言统计排除
+data/abstracts.jsonl linguist-generated=true

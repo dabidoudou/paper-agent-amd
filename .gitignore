@@ -1,0 +1,29 @@
+# ── 论文 PDF 一律不入库（版权 + 体积）──────────────────────────
+# 语料获取方式见 data/papers/README.md
+data/papers/*.pdf
+data/fulltext/
+
+# ── 运行时产物（不进版本控制）────────────────────────────────
+data/abstracts.local.jsonl
+data/.extract_cache.json
+results/*.png
+
+# ── Python ──────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ── 模型与缓存（云端持久化目录，勿入库）─────────────────────
+cache/
+models/
+*.safetensors
+*.bin
+
+# ── 编辑器 / 系统 ───────────────────────────────────────────
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
