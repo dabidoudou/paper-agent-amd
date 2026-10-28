@@ -66,9 +66,9 @@ def test_prompt() -> None:
     check("资料块含正文", "固定长度分块" in ctx and "seq2seq" in ctx)
     check("资料块之间空行分隔", "\n\n" in ctx)
 
-    # rank 缺失时不应崩溃
+    # rank 缺失时不应崩溃（v2 起资料按论文分组，故只断言占位符存在）
     ctx2 = build_context([{"paper_id": "P09", "title": "t", "text": "x"}])
-    check("rank 缺失时回退为 ?", ctx2.startswith("[?]"), ctx2[:12])
+    check("rank 缺失时回退为 ?", "[?]" in ctx2, ctx2[:60])
 
     msgs = build_messages("固定长度分块有什么问题？", HITS)
     check("messages 为 2 条（system+user）", len(msgs) == 2, len(msgs))

@@ -8,6 +8,13 @@ data/abstracts.local.jsonl
 data/.extract_cache.json
 results/*.png
 
+# 派生索引：可由 `agent.py index` 重建，不入库
+data/index/
+
+# 本地临时目录 / 依赖安装目录
+.tmp/
+.vendor/
+
 # ── Python ──────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
