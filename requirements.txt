@@ -1,0 +1,21 @@
+# paper-agent-amd 运行时依赖
+#
+# ⚠️ 只安装下列包。不要 `pip install -U torch` / `-U transformers`：
+#    AMD 云端镜像里的 torch 是 ROCm 定制构建，被 pip 换成 CUDA/CPU 轮子后
+#    `torch.cuda.is_available()` 会立刻变成 False，而实例只剩几十分钟。
+#
+# 由平台镜像提供、本项目**不列入**的包：
+#   torch         ROCm 定制构建（设备字符串仍写作 cuda）
+#   transformers  纯 Python；需 >= 4.37 才认识 Qwen2 架构
+#   numpy         平台通常已预装
+#   certifi       discovery.py 用它修复 CA 路径；缺失时回退系统证书
+#   huggingface_hub  随 transformers 一起装上，用于下载模型
+#
+# 安装建议（强制二进制轮子，避免源码编译吃掉时间）：
+#   pip install --only-binary=:all: -r requirements.txt
+
+faiss-cpu>=1.8.0
+pymupdf>=1.24.0
+
+# 可选：pymupdf 装不上时的 PDF 抽取回退方案（纯 Python，无编译依赖）
+pypdf>=4.0.0
