@@ -25,10 +25,39 @@ _ARXIV_WM = re.compile(r"arXiv:\d{4}\.\d{4,5}(?:v\d+)?(?:\s*\[[^\]]{1,20}\])?(?:
 _PAGE_NO = re.compile(r"^[\s\-\u2013\u2014.]*\d{1,4}[\s\-\u2013\u2014.]*$")
 _MULTI_SPACE = re.compile(r"[ \t\u00a0]{2,}")
 
+
+def _numericish(token: str) -> bool:
+    """判断一个词是否"数值型"（含数字且几乎没有字母）。
+
+    用于识别表格行：`PixArt-α 0.6B 74.97 97.32 …` 里除方法名外全是数值型词。
+    """
+    if not any(ch.isdigit() for ch in token):
+        return False
+    return sum(1 for ch in token if ch.isalpha()) <= 1
+
+
+def is_table_noise(line: str, min_tokens: int = 6, ratio: float = 0.55) -> bool:
+    """表格行判定：数值型词占比过高。
+
+    阈值取 0.55 且要求至少 6 个词，避免误伤正常句子里夹带的数字
+    （如 "ACC 平均提升 3.81%，ROUGE-L 提升 3.28%" 这类结论句）。
+    """
+    tokens = line.split()
+    if len(tokens) < min_tokens:
+        return False
+    numeric = sum(1 for t in tokens if _numericish(t))
+    return numeric / len(tokens) >= ratio
+
+
 # ── 参考文献起点 ────────────────────────────────────────────────────
 _REF_HEADS = re.compile(
     r"^\s*(?:\d{1,2}\.?\s*)?(references|bibliography|literature\s+cited|"
     r"参\s*考\s*文\s*献|引\s*用\s*文\s*献)\s*[:：]?\s*$",
+    re.I,
+)
+# 宽松版：标题与首条引用挤在同一行（"References Akari Asai, …"）
+_REF_HEADS_LOOSE = re.compile(
+    r"^\s*(?:\d{1,2}\.?\s*)?(references|bibliography|参\s*考\s*文\s*献)\b",
     re.I,
 )
 
@@ -110,6 +139,8 @@ def clean_pages(pages: list[str]) -> list[Block]:
                 continue
             if _PAGE_NO.match(line):
                 continue
+            if is_table_noise(line):
+                continue          # 表格行：数值型词占比过高，会严重污染嵌入
             lines.append(line)
         raw_pages.append(lines)
 
@@ -152,6 +183,12 @@ def is_heading(line: str) -> bool:
     if "://" in text or "www." in text.lower():
         return False
 
+    # 数字/符号为主的短行不是标题（如图表轴标签 "1 2 ... 10"）
+    cjk_all = len(_CJK_RE.findall(text))
+    letters = sum(1 for ch in text if ch.isalpha())
+    if letters < 3 and cjk_all < 2:
+        return False
+
     known = _KNOWN_NAMES.match(text)
     if known:
         # 通用词只有首字母大写/全大写才算标题；小写的 "model"、"method" 是正文碎片
@@ -173,10 +210,52 @@ def is_heading(line: str) -> bool:
 
 
 def is_references_heading(line: str) -> bool:
-    return bool(_REF_HEADS.match(line.strip()))
+    text = line.strip()
+    if _REF_HEADS.match(text):
+        return True
+    # 宽松匹配：参考文献标题常与首条引用挤在同一行（"References Akari Asai, …"）
+    return bool(_REF_HEADS_LOOSE.match(text))
+
+
+# ── 参考文献的兜底判定：引用密度 ────────────────────────────────────
+_CITE_LINE = re.compile(
+    r"(?:\(|,)\s*(?:19|20)\d{2}[a-z]?\)?"          # (2023) / , 2024
+    r"|\bet\s+al\."
+    r"|arXiv:\d{4}\.\d{4,5}"
+    r"|Proceedings\s+of|Journal\s+of|Transactions\s+of"
+    r"|In\s+Proceedings|Springer|ACM\s+Press|MIT\s+Press"
+    r"|vol\.\s*\d+|pp\.\s*\d+",
+    re.I,
+)
+CITATION_RUN_MIN = 6  # 连续多少行像引用，就认定参考文献从此开始
 
 
 # ── 3. 分节 ─────────────────────────────────────────────────────────
+def find_references_cut(blocks: list[Block]) -> int:
+    """返回参考文献起始的行号；找不到返回 len(blocks)。
+
+    两条判据：① 命中 References / 参考文献 标题行；
+    ② 兜底——连续 CITATION_RUN_MIN 行都像引用条目。
+    第二条是为真实论文准备的：不少 PDF 的 References 标题会和首条引用挤在同一行，
+    纯行首匹配会漏检，导致整段引用被当成正文（实测 P02 就是这种情况）。
+    """
+    cite_run = 0
+    cite_start = 0
+    for idx, block in enumerate(blocks):
+        line = block.text
+        if is_references_heading(line):
+            return idx
+        if _CITE_LINE.search(line):
+            if cite_run == 0:
+                cite_start = idx
+            cite_run += 1
+            if cite_run >= CITATION_RUN_MIN:
+                return cite_start
+        else:
+            cite_run = 0
+    return len(blocks)
+
+
 def split_sections(pages: list[str], cut_references: bool = True) -> list[Section]:
     """把清洗后的文本按标题切成章节；默认在参考文献处截断。
 
@@ -184,13 +263,15 @@ def split_sections(pages: list[str], cut_references: bool = True) -> list[Sectio
         Section 列表。若未识别到任何标题，返回单个名为 "body" 的章节。
     """
     blocks = clean_pages(pages)
+    if cut_references:
+        # 先定截断点，再分节：避免"边分节边回溯删除"带来的边界错误
+        blocks = blocks[: find_references_cut(blocks)]
+
     sections: list[Section] = []
     current = Section(name="body", index=0, page_start=blocks[0].page if blocks else 1)
 
     for block in blocks:
         line = block.text
-        if cut_references and is_references_heading(line):
-            break
         if is_heading(line):
             if current.lines:
                 sections.append(current)
