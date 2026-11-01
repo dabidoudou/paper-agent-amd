@@ -214,8 +214,10 @@ def check_torch(report: Report) -> dict:
         info["mem_bandwidth_gbs"] = round(bw_gbs, 1)
         report.add("带宽实测完成", bw_gbs > 1, f"{bw_gbs:.1f} GB/s")
 
+        # 权重用**十进制 GB（1e9）**，与带宽的 GB/s 量纲一致；
+        # 若用 1024**3 会与十进制带宽混用，得到的结果偏低约 7%。
         # 1.54B 参数 × 2 字节 = 3.08 GB；每生成一个 token 要把全部权重读一遍
-        weight_gb = 1.54e9 * 2 / 1024**3
+        weight_gb = 1.54e9 * 2 / 1e9
         ceiling = bw_gbs / weight_gb
         info["decode_ceiling_tok_s_1p5b"] = round(ceiling, 1)
         print(
@@ -223,7 +225,7 @@ def check_torch(report: Report) -> dict:
             f"≈ {ceiling:.0f} tok/s（实测通常为上限的 40%~70%）"
         )
         for params_b in (7, 14):
-            w = params_b * 1e9 * 2 / 1024**3
+            w = params_b * 1e9 * 2 / 1e9
             print(f"    参考：{params_b}B 模型 ≈ {bw_gbs / w:.1f} tok/s")
         del src, dst
         torch.cuda.empty_cache()

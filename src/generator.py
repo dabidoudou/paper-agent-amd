@@ -173,6 +173,8 @@ class QwenGenerator:
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
 
+        from embedder import _from_pretrained
+
         self._torch = torch
         if self.device is None:
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -183,8 +185,8 @@ class QwenGenerator:
         }[self.dtype_name]
 
         self._tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        self._model = AutoModelForCausalLM.from_pretrained(
-            self.model_name, torch_dtype=torch_dtype
+        self._model = _from_pretrained(
+            AutoModelForCausalLM, self.model_name, torch_dtype
         )
         self._model.to(self.device).eval()
 
@@ -194,7 +196,8 @@ class QwenGenerator:
             "gen_device": self.device,
             "gen_dtype": self.dtype_name,
             "gen_n_params": n_params,
-            "gen_weight_gb": round(n_params * self._bytes_per_param(), 2),
+            # 十进制 GB（1e9）：与业界标注方式一致，1.54B × 2 字节 ≈ 3.08 GB
+            "gen_weight_gb": round(n_params * self._bytes_per_param() / 1e9, 4),
         }
 
     def _bytes_per_param(self) -> float:

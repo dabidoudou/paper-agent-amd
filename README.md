@@ -95,11 +95,20 @@ mean-pooling 编码器（约 20 行）替代它，依赖更少且每步可计时
 ## 本地验证（无需 GPU）
 
 ```bash
-python tests/test_batch1.py    # 切分 / 语料 / 检索链路
-python tests/test_batch2.py    # Prompt / 编码器 / 计时 / 惰性加载
-python tests/test_phase_a.py   # 全文分节 / 论文库 / 多样化检索
-python tests/test_phase_c.py   # arXiv 检索 / 多论文 prompt / 工作流 dry-run
+python tests/test_batch1.py        # 切分 / 语料 / 检索链路
+python tests/test_batch2.py        # Prompt / 编码器 / 计时 / 惰性加载
+python tests/test_phase_a.py       # 全文分节 / 论文库 / 多样化检索
+python tests/test_phase_c.py       # arXiv 检索 / 多论文 prompt / 工作流 dry-run
+python tests/test_deep_learning.py # torch 路径：本地构造 tiny BERT/Qwen2，离线验证
 ```
+
+前 4 套只需 `numpy`；第 5 套需要 `torch + transformers`，但**不需要网络**——
+它用 `BertConfig` / `Qwen2Config` 现场构造 2 层小模型，验证 mean-pooling 的 mask 广播、
+precision 参数名兼容（`torch_dtype` / `dtype`）、chat template、流式生成与 TTFT 计时
+等**设备无关**的代码路径。CPU 上通过即说明逻辑正确。
+
+已在 `torch 2.15 + transformers 5.22`（CPU）与 `numpy 2.3` 两套环境下验证：
+**5 套测试、223 项断言全部通过**。
 
 ## 许可
 

@@ -31,6 +31,18 @@ def l2_normalize(vectors: np.ndarray, eps: float = 1e-12) -> np.ndarray:
     return arr / np.maximum(norms, eps)
 
 
+def _from_pretrained(factory, model_name: str, torch_dtype):
+    """兼容不同 transformers 版本的精度参数名。
+
+    transformers 4.5x 起把 `torch_dtype` 改名为 `dtype`，5.x 可能已移除旧名；
+    两种写法各试一次，避免因版本差异在云端直接崩掉。
+    """
+    try:
+        return factory.from_pretrained(model_name, torch_dtype=torch_dtype)
+    except TypeError:
+        return factory.from_pretrained(model_name, dtype=torch_dtype)
+
+
 def hashing_encode(texts: list[str], dim: int = 512) -> np.ndarray:
     """确定性字符 n-gram 哈希编码（仅用于管道验证）。"""
     rows = []
@@ -107,7 +119,7 @@ class BertEmbedder:
         }[self.dtype_name]
 
         self._tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        self._model = AutoModel.from_pretrained(self.model_name, torch_dtype=torch_dtype)
+        self._model = _from_pretrained(AutoModel, self.model_name, torch_dtype)
         self._model.to(self.device).eval()
         self.dim = int(self._model.config.hidden_size)
         return {
