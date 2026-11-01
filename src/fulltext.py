@@ -50,6 +50,19 @@ _CJK_RE = re.compile(rf"[{_CJK}]")
 _SENT_PUNCT = re.compile(r"[。！？；，,;!?]")
 
 
+def _edge_key(line: str) -> str:
+    """把页眉/页脚行归一化成可比较的键。
+
+    真实论文的页眉往往带页码（"2 J. Singh and C. Merola" / "4 J. Singh and C. Merola"），
+    直接按原文计数会把它们当成互不相同的行，导致模板噪声漏检。
+    这里去掉首尾页码、把残余数字统一替换，再小写化。
+    """
+    s = re.sub(r"^[\s\W]{0,3}\d{1,4}\s+", "", line)   # 前导页码
+    s = re.sub(r"\s+\d{1,4}[\s\W]{0,3}$", "", s)       # 尾部页码
+    s = re.sub(r"\d+", "#", s)
+    return _MULTI_SPACE.sub(" ", s).strip().lower()
+
+
 @dataclass
 class Block:
     """带页码的文本行。"""
@@ -100,22 +113,24 @@ def clean_pages(pages: list[str]) -> list[Block]:
             lines.append(line)
         raw_pages.append(lines)
 
-    # 页眉/页脚检测：同一行在超过一半页面上重复出现 -> 视为模板噪声
+    # 页眉/页脚检测：把边缘行归一化后再计数。
+    # 真实论文的页眉每页都不同（"2 J. Singh" / "4 J. Singh"），
+    # 只有把页码归一化掉才能把它们识别成同一行模板噪声。
     edge_counter: Counter[str] = Counter()
-    for lines in raw_pages:
-        if not lines:
-            continue
+    nonempty_pages = [p for p in raw_pages if p]
+    for lines in nonempty_pages:
         for edge in (lines[0], lines[-1]):
-            if len(edge) <= 80:
-                edge_counter[edge] += 1
-    threshold = max(3, len([p for p in raw_pages if p]) // 2)
-    boilerplate = {text for text, n in edge_counter.items() if n >= threshold}
+            if len(edge) <= 100:
+                edge_counter[_edge_key(edge)] += 1
+    # 阈值取 25%：15 页论文的页眉常只出现 5 次，用"一半页数"会漏掉
+    threshold = max(2, int(round(len(nonempty_pages) * 0.25)))
+    boilerplate = {key for key, n in edge_counter.items() if n >= threshold}
 
     blocks: list[Block] = []
     for pno, lines in enumerate(raw_pages, start=1):
         for idx, line in enumerate(lines):
             is_edge = idx == 0 or idx == len(lines) - 1
-            if is_edge and line in boilerplate:
+            if is_edge and _edge_key(line) in boilerplate:
                 continue
             blocks.append(Block(text=line, page=pno))
     return blocks
@@ -126,13 +141,26 @@ def is_heading(line: str) -> bool:
     """判断一行是否为章节标题。
 
     策略偏保守：宁可漏判（内容仍会进入 body 章节）也不要错判（会把正文切碎）。
+    真实 arXiv 论文里有两类高频误判，这里显式排除：
+      1. 脚注 URL（"2 https://github.com/..."）会被编号标题规则命中
+      2. 图表残留的孤立小写通用词（"model"）会被已知章节名规则命中
     """
     text = line.strip()
     # 下限取 2：中文标题常常只有两个字（「摘要」「结论」「方法」）
     if not (2 <= len(text) <= 70):
         return False
-    if _KNOWN_NAMES.match(text):
-        return True
+    if "://" in text or "www." in text.lower():
+        return False
+
+    known = _KNOWN_NAMES.match(text)
+    if known:
+        # 通用词只有首字母大写/全大写才算标题；小写的 "model"、"method" 是正文碎片
+        head = known.group(0).strip()
+        latin = re.match(r"[A-Za-z]", head.lstrip("0123456789. "))
+        if latin is None or latin.group(0).isupper():
+            return True
+        return False
+
     if _SENT_PUNCT.search(text):
         return False
     if _NUM_HEAD.match(text):
