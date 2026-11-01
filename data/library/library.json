@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "papers": {
+    "P01": {
+      "paper_id": "P01",
+      "title": "AR-RAG: Autoregressive Retrieval Augmentation for Image Generation",
+      "authors": [
+        "Jingyuan Qi",
+        "Zhiyang Xu",
+        "Qifan Wang",
+        "Lifu Huang"
+      ],
+      "year": 2025,
+      "venue": "",
+      "lang": "en",
+      "source": "arxiv",
+      "source_url": "https://arxiv.org/abs/2506.06962",
+      "license": "arXiv-non-exclusive",
+      "added_from": "discovery",
+      "pdf_sha1": "1a59f7625d970720c84b57bba7083344c9fd2760",
+      "n_pages": 18,
+      "n_sections": 16,
+      "n_chunks": 30,
+      "status": "loaded",
+      "added_at": "2026-11-01T12:47:58",
+      "updated_at": "2026-11-01T12:47:58",
+      "arxiv_id": "2506.06962"
+    },
+    "P02": {
+      "paper_id": "P02",
+      "title": "Tree of Reviews: A Tree-based Dynamic Iterative Retrieval Framework for Multi-hop Question Answering",
+      "authors": [
+        "Li Jiapeng",
+        "Liu Runze",
+        "Li Yabo",
+        "Zhou Tong",
+        "Li Mingling",
+        "Chen Xiang"
+      ],
+      "year": 2024,
+      "venue": "",
+      "lang": "en",
+      "source": "arxiv",
+      "source_url": "https://arxiv.org/abs/2404.14464",
+      "license": "arXiv-non-exclusive",
+      "added_from": "discovery",
+      "pdf_sha1": "09da6fbcbcbd0dd0b64f98a990d62162f6467afe",
+      "n_pages": 17,
+      "n_sections": 12,
+      "n_chunks": 30,
+      "status": "loaded",
+      "added_at": "2026-11-01T12:47:59",
+      "updated_at": "2026-11-01T12:47:59",
+      "arxiv_id": "2404.14464"
+    },
+    "P03": {
+      "paper_id": "P03",
+      "title": "Reconstructing Context: Evaluating Advanced Chunking Strategies for Retrieval-Augmented Generation",
+      "authors": [
+        "Carlo Merola",
+        "Jaspinder Singh"
+      ],
+      "year": 2025,
+      "venue": "",
+      "lang": "en",
+      "source": "arxiv",
+      "source_url": "https://arxiv.org/abs/2504.19754",
+      "license": "arXiv-non-exclusive",
+      "added_from": "discovery",
+      "pdf_sha1": "40487bf0027a0f9dfeaee56c12d264f1d00c288d",
+      "n_pages": 15,
+      "n_sections": 13,
+      "n_chunks": 28,
+      "status": "loaded",
+      "added_at": "2026-11-01T12:47:59",
+      "updated_at": "2026-11-01T12:47:59",
+      "arxiv_id": "2504.19754"
+    }
+  }
+}

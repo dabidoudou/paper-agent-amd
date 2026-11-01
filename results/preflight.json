@@ -1,0 +1,205 @@
+{
+  "generated_at": "2026-11-01T12:32:53",
+  "python": "3.12.3",
+  "platform": "Linux-6.14.0-1018-oem-x86_64-with-glibc2.39",
+  "n_pass": 27,
+  "n_fail": 0,
+  "items": [
+    {
+      "name": "python >= 3.9",
+      "ok": true,
+      "critical": true,
+      "status": "PASS",
+      "detail": "3.12.3"
+    },
+    {
+      "name": "平台信息",
+      "ok": true,
+      "critical": true,
+      "status": "PASS",
+      "detail": "Linux-6.14.0-1018-oem-x86_64-with-glibc2.39"
+    },
+    {
+      "name": "CPU 核数",
+      "ok": true,
+      "critical": true,
+      "status": "PASS",
+      "detail": "32"
+    },
+    {
+      "name": "可用磁盘 >= 8GB（模型约 3.6GB + PDF）",
+      "ok": true,
+      "critical": false,
+      "status": "PASS",
+      "detail": "7261.7 GB 可用 / 10701 GB 总"
+    },
+    {
+      "name": "工作目录可写",
+      "ok": true,
+      "critical": true,
+      "status": "PASS",
+      "detail": "/home/jovyan/paper-agent-amd"
+    },
+    {
+      "name": "HF_HOME 已指到持久化目录",
+      "ok": false,
+      "critical": false,
+      "status": "WARN",
+      "detail": "未设置：模型会下到 ~/.cache，实例重启后需重下 3.6GB"
+    },
+    {
+      "name": "torch 已安装",
+      "ok": true,
+      "critical": true,
+      "status": "PASS",
+      "detail": "2.9.1+rocm7.13.0"
+    },
+    {
+      "name": "ROCm 构建（torch.version.hip 非空）",
+      "ok": true,
+      "critical": true,
+      "status": "PASS",
+      "detail": "7.13.99004-3309c6114a"
+    },
+    {
+      "name": "torch.cuda.is_available()",
+      "ok": true,
+      "critical": true,
+      "status": "PASS",
+      "detail": "True"
+    },
+    {
+      "name": "float32 矩阵乘 4096³",
+      "ok": true,
+      "critical": true,
+      "status": "PASS",
+      "detail": "43 ms / 3.2 TFLOP/s"
+    },
+    {
+      "name": "bfloat16 矩阵乘 4096³",
+      "ok": true,
+      "critical": true,
+      "status": "PASS",
+      "detail": "5 ms / 30.0 TFLOP/s"
+    },
+    {
+      "name": "float16 矩阵乘 4096³",
+      "ok": true,
+      "critical": true,
+      "status": "PASS",
+      "detail": "4 ms / 31.9 TFLOP/s"
+    },
+    {
+      "name": "float32 相对误差可接受（<1e-05）",
+      "ok": true,
+      "critical": false,
+      "status": "PASS",
+      "detail": "mean|err|/mean|ref| = 5.052e-07"
+    },
+    {
+      "name": "bfloat16 相对误差可接受（<0.01）",
+      "ok": true,
+      "critical": false,
+      "status": "PASS",
+      "detail": "mean|err|/mean|ref| = 2.839e-03"
+    },
+    {
+      "name": "float16 相对误差可接受（<0.001）",
+      "ok": true,
+      "critical": false,
+      "status": "PASS",
+      "detail": "mean|err|/mean|ref| = 3.551e-04"
+    },
+    {
+      "name": "带宽实测完成",
+      "ok": true,
+      "critical": true,
+      "status": "PASS",
+      "detail": "213.2 GB/s"
+    },
+    {
+      "name": "numpy 可用",
+      "ok": true,
+      "critical": false,
+      "status": "PASS",
+      "detail": "2.4.6"
+    },
+    {
+      "name": "certifi 可用",
+      "ok": true,
+      "critical": false,
+      "status": "PASS",
+      "detail": "2026.07.22"
+    },
+    {
+      "name": "huggingface_hub 可用",
+      "ok": true,
+      "critical": false,
+      "status": "PASS",
+      "detail": "2.2.0"
+    },
+    {
+      "name": "faiss 可用（IndexFlatIP 正常）",
+      "ok": true,
+      "critical": false,
+      "status": "PASS",
+      "detail": "1.15.1"
+    },
+    {
+      "name": "pymupdf 可用（PDF 抽取）",
+      "ok": true,
+      "critical": true,
+      "status": "PASS",
+      "detail": "2.0"
+    },
+    {
+      "name": "transformers 可用",
+      "ok": true,
+      "critical": true,
+      "status": "PASS",
+      "detail": "5.22.1"
+    },
+    {
+      "name": "transformers 认识 Qwen2 架构",
+      "ok": true,
+      "critical": true,
+      "status": "PASS",
+      "detail": ">= 4.37"
+    },
+    {
+      "name": "TextIteratorStreamer 可用（TTFT 计时需要）",
+      "ok": true,
+      "critical": true,
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "13 个项目模块可导入",
+      "ok": true,
+      "critical": true,
+      "status": "PASS",
+      "detail": "全部通过"
+    },
+    {
+      "name": "arXiv API 可访问",
+      "ok": true,
+      "critical": false,
+      "status": "PASS",
+      "detail": "2 条 / 0.8s"
+    },
+    {
+      "name": "_torch_info",
+      "ok": true,
+      "critical": false,
+      "status": "INFO",
+      "detail": "{\"torch\": \"2.9.1+rocm7.13.0\", \"hip\": \"7.13.99004-3309c6114a\", \"cuda_available\": true, \"device_name\": \"Radeon 8060S Graphics\", \"total_mem_gb\": 64.0, \"cu_count\": 20, \"matmul_float32_s\": 0.0429, \"matmul_float32_tflops\": 3.2, \"matmul_bfloat16_s\": 0.0046, \"matmul_bfloat16_tflops\": 29.99, \"matmul_float16_s\": 0.0043, \"matmul_float16_tflops\": 31.9, \"rel_err_float32\": 5.052e-07, \"rel_err_bfloat16\": 0.002839, \"rel_err_float16\": 0.0003551, \"mem_bandwidth_gbs\": 213.2, \"decode_ceiling_tok_s_1p5b\": 69.2, \"peak_alloc_mb\": 570.0}"
+    },
+    {
+      "name": "_deps",
+      "ok": true,
+      "critical": false,
+      "status": "INFO",
+      "detail": "{\"numpy\": \"2.4.6\", \"certifi\": \"2026.07.22\", \"huggingface_hub\": \"2.2.0\", \"faiss\": \"1.15.1\", \"pymupdf\": \"2.0\", \"transformers\": \"5.22.1\"}"
+    }
+  ]
+}
