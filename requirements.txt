@@ -1,18 +1,30 @@
 # paper-agent-amd 运行时依赖
 #
-# ⚠️ 只安装下列包。不要 `pip install -U torch` / `-U transformers`：
-#    AMD 云端镜像里的 torch 是 ROCm 定制构建，被 pip 换成 CUDA/CPU 轮子后
-#    `torch.cuda.is_available()` 会立刻变成 False，而实例只剩几十分钟。
+# ⚠️ 最重要的一条：**不要安装/升级 torch**。
+#    AMD 云端镜像是 ROCm 定制构建（实测：torch 2.9.1+rocm7.13.0，Python 3.12），
+#    一旦被 pip 换成 CUDA/CPU 轮子，`torch.cuda.is_available()` 立刻变 False，
+#    而实例只剩几十分钟，几乎无法从容恢复。
 #
-# 由平台镜像提供、本项目**不列入**的包：
-#   torch         ROCm 定制构建（设备字符串仍写作 cuda）
-#   transformers  纯 Python；需 >= 4.37 才认识 Qwen2 架构
-#   numpy         平台通常已预装
-#   certifi       discovery.py 用它修复 CA 路径；缺失时回退系统证书
-#   huggingface_hub  随 transformers 一起装上，用于下载模型
+# 实测的 AMD AUP 镜像预装情况（2026 年）：
+#   ✅ torch        2.9.1+rocm7.13.0（ROCm 定制构建，设备字符串仍写作 cuda）
+#   ✅ numpy        2.4.6
+#   ✅ requests / safetensors
+#   ❌ transformers、tokenizers、huggingface_hub  **并没有预装**
+#   ❌ faiss、pymupdf、pypdf                       也没有
+#
+# 因此下面把 transformers 也列进来了。它自身依赖 torch，但只要求下限，
+# 2.9.1 远超任何下限，安装时不会去动 torch。装完务必核对 torch 版本：
+#   python3 -m pip list --format=freeze | grep -i '^torch'
 #
 # 安装建议（强制二进制轮子，避免源码编译吃掉时间）：
-#   pip install --only-binary=:all: -r requirements.txt
+#   python3 -m pip install --only-binary=:all: -r requirements.txt
+# 若提示权限不足（系统 dist-packages 不可写），改用 --user
+#   （--user 装到 ~/.local，而 ~ 在持久盘上，下次实例还在）：
+#   python3 -m pip install --user --only-binary=:all: -r requirements.txt
+
+# 嵌入与生成所需（含 tokenizers / huggingface_hub / safetensors 等传递依赖）
+# 下限 4.37 是 Qwen2 架构支持的最低版本；不设上限以便适配云端 torch 版本。
+transformers>=4.37
 
 faiss-cpu>=1.8.0
 pymupdf>=1.24.0
